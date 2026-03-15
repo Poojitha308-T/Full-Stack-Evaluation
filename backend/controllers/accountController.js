@@ -1,4 +1,4 @@
-const supabase = require("@supabase/supabase-js");
+const supabase = require("../config/supabaseClient");
 
 exports.getBalance = async (req, res) => {
   const { data } = await supabase
@@ -17,52 +17,57 @@ exports.getUsers = async (req, res) => {
 };
 
 exports.transfer = async (req, res) => {
-  const { receiverId, amount } = req.body;
+  try {
+    const { receiverId, amount } = req.body;
 
-  const senderId = req.user.id;
+    const senderId = req.user.id;
 
-  const { data: sender } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", senderId)
-    .single();
+    const { data: sender } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", senderId)
+      .single();
 
-  if (sender.balance < amount) {
-    return res.status(400).json({ message: "Insufficient Balance" });
+    if (sender.balance < amount) {
+      return res.status(400).json({ message: "Insufficient Balance" });
+    }
+
+    const { data: receiver } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", receiverId)
+      .single();
+
+    await supabase
+      .from("users")
+      .update({ balance: sender.balance - amount })
+      .eq("id", senderId);
+
+    await supabase
+      .from("users")
+      .update({ balance: receiver.balance + amount })
+      .eq("id", receiverId);
+
+    await supabase.from("transactions").insert([
+      {
+        sender_id: senderId,
+        receiver_id: receiverId,
+        amount,
+        type: "debit",
+      },
+      {
+        sender_id: senderId,
+        receiver_id: receiverId,
+        amount,
+        type: "credit",
+      },
+    ]);
+
+    res.json({ message: "Transfer successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
-
-  const { data: receiver } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", receiverId)
-    .single();
-
-  await supabase
-    .from("users")
-    .update({ balance: sender.balance - amount })
-    .eq("id", senderId);
-
-  await supabase
-    .from("users")
-    .update({ balance: receiver.balance + amount })
-    .eq("id", receiverId);
-
-  await supabase.from("transactions").insert([
-    {
-      sender_id: senderId,
-      receiver_id: receiverId,
-      amount,
-      type: "debit",
-    },
-    {
-      sender_id: senderId,
-      receiver_id: receiverId,
-      amount,
-      type: "credit",
-    },
-  ]);
-
-  res.json({ message: "Transfer successful" });
 };
 
 exports.getStatement = async (req, res) => {

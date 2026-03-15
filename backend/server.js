@@ -13,6 +13,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/account", accountRoutes);
 
+const PORT= 5000
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

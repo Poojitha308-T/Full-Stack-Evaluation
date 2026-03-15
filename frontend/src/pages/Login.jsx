@@ -18,13 +18,13 @@ export default function Login() {
         placeholder="Enter email"
         onChange={(e) => setForm({ ...form, email: e.target.value })}
       />
-
+      <br/> <br/>
       <input
         type="password"
         placeholder="Enter password"
         onChange={(e) => setForm({ ...form, password: e.target.value })}
       />
-
+      <br/> <br/>
       <button onClick={handleLogin}>Login</button>
     </div>
   );
