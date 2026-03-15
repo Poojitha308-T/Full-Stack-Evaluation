@@ -8,9 +8,14 @@ export default function Signup() {
     password: "",
   });
 
-  const handlesubmit = async () => {
-    const res = await API.post("/auth/signup", form);
-    localStorage.setItem("token", res.data.token);
+  const handleSubmit = async () => {
+    try {
+      const res = await API.post("/auth/signup", form);
+
+      localStorage.setItem("token", res.data.token);
+    } catch (err) {
+      console.log(err.response.data);
+    }
   };
 
   return (
@@ -30,7 +35,7 @@ export default function Signup() {
         onChange={(e) => setForm({ ...form, password: e.target.value })}
       />
       <br /> <br />
-      <button onClick={handlesubmit}>Signup</button>
+      <button onClick={handleSubmit}>Signup</button>
     </div>
   );
 }
