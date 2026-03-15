@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "./../api";
 
 export default function Signup() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -13,6 +15,7 @@ export default function Signup() {
       const res = await API.post("/auth/signup", form);
 
       localStorage.setItem("token", res.data.token);
+      navigate("/login");
     } catch (err) {
       console.log(err.response.data);
     }
